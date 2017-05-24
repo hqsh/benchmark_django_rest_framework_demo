@@ -1,0 +1,1 @@
+import benchmark_django_rest_framework_demo.benchmark_settings
