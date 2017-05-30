@@ -4,18 +4,21 @@ from django.http import JsonResponse
 import copy
 
 
-# The http response json data field names
+# The http response json data field names, you can modify them to fit in with your web sit. The SUCCESS_CODE cannot be
+# set to any number below 200 (200 is allowed). Otherwise it maybe conflict with the codes defined in this framework.
 CODE = 'code'
 MSG = 'msg'
 DATA = 'data'
+SUCCESS_CODE = 0
 
 # The http response json format
 # The code 0 represents the successful response. The error codes which smaller than 200 is defined by the framework.
 # It's not recommended to define the error codes by the any web site itself.
 # http 响应的 json 格式配置
-# CODE 0 代表成功的响应. 小于 200 的 CODE 用于该框架, 不推荐使用小于 200 的 CODE 用于站点自定义的错误.
+# CODE 为 SUCCESS_CODE 代表成功的响应. 小于 200 的 CODE 用于该框架, 不推荐使用小于 200 的 CODE 用于站点自定义的错误.
+# 仅支持对 SUCCESS_CODE 值进行修改成 200 或 200 以上, 否则会有不可预期的结果
 DICT_RESPONSE_BY_CODE = {
-    '0': {CODE: 0, MSG: 'success'},
+    '0': {CODE: SUCCESS_CODE, MSG: 'success'},
     '1': {CODE: 1, MSG: 'raise exception'},    # the msg should be replaced by the except reason
     '2': {CODE: 2, MSG: 'request parameters should include "pk" as the primary key for the primary model of the uri'},
     '3': {CODE: 3, MSG: 'this api does not support this http method'},
@@ -30,8 +33,8 @@ DICT_RESPONSE_BY_CODE = {
     '12': {CODE: 12, MSG: 'insert failed: the post request cannot contains "pk" parameter'},
     '13': {CODE: 13, MSG: 'insert failed: the post request should has some legal request data'},
     '14': {CODE: 14, MSG: 'invalid select_related field: '},
-    '15': {CODE: 15, MSG: "request parameter doesn't exist: "},
-    '16': {CODE: 16, MSG: "request data in body doesn't exist: "},
+    '15': {CODE: 15, MSG: 'request parameter does not exist: '},
+    '16': {CODE: 16, MSG: 'request data in body does not exist: '},
     '17': {CODE: 17, MSG: 'the format of date time string in request parameter is not correct, it should like "2017-03-24 20:05:39"'},
     '18': {CODE: 18, MSG: 'the format of date string in request parameter is not correct, it should like "2017-03-24"'},
     '19': {CODE: 19, MSG: 'the format of time string in request parameter is not correct, it should like "20:05:39"'},
@@ -40,8 +43,11 @@ DICT_RESPONSE_BY_CODE = {
 }
 
 
-def GET_RESPONSE_BY_CODE(code=0, msg=None, data=None, msg_append=None):
-    res = copy.deepcopy(DICT_RESPONSE_BY_CODE[str(code)])
+def GET_RESPONSE_BY_CODE(code=SUCCESS_CODE, msg=None, data=None, msg_append=None):
+    if code == SUCCESS_CODE:
+        res = copy.deepcopy(DICT_RESPONSE_BY_CODE['0'])
+    else:
+        res = copy.deepcopy(DICT_RESPONSE_BY_CODE[str(code)])
     if msg:
         if isinstance(msg, str):
             res[MSG] = msg
@@ -51,10 +57,12 @@ def GET_RESPONSE_BY_CODE(code=0, msg=None, data=None, msg_append=None):
         res[MSG] += msg_append
     if data:
         res[DATA] = data
+    else:
+        res[DATA] = []
     return res
 
 
-def GET_HTTP_RESPONSE_BY_CODE(code=0, msg=None, data=None):
+def GET_HTTP_RESPONSE_BY_CODE(code=SUCCESS_CODE, msg=None, data=None):
     return JsonResponse(GET_RESPONSE_BY_CODE(code, msg, data), json_dumps_params={"indent": 2})
 
 
@@ -100,7 +108,22 @@ LIMIT = 'limit'
 # The keyword of http get requests for the data order.
 ORDER_BY = 'order_by'
 
-# The keyword of django model primary key
+# The keyword of django Q object for http get request to filter model.
+# For example, /employee?Q=[employee_name=EmployeeAX1$employee_id=1|employee_name=EmployeeAX2$employee_id=2,
+# department=1$employee_id=1|department=4$employee_id=8] is same as filter model:
+# Employee.objects.filter(Q(employee_name=EmployeeAX1, employee_id=1) | Q(employee_name=EmployeeAX2, employee_id=2),
+# Q(department=1, employee_id=1) | Q(department=4, employee_id=8))
+Q = 'Q'
+
+# The keyword of "or" splitter for several django Q objects.
+Q_OR = '|'
+
+# The keyword of "and" splitter in one django Q object.
+# You cannot use "&" because it is the splitter for several parameters in http get request.
+# And you cannot use "," because it is the splitter of elements in a list in this framework.
+Q_AND = '$'
+
+# The keyword of django model primary key.
 MODEL_PRIMARY_KEY = 'pk'
 
 # When some models use delete flag, the http delete requests don't delete the items of models, but they set the
@@ -146,7 +169,7 @@ MANY_TO_MANY_RELATION_MODEL_NAMES = (
 # restrictions. The framework can maintain the unique restrictions.
 # 若 model 使用删除标记位, 无法使用唯一性约束, 需要定义唯一性约束的字段
 DICT_MODEL_UNIQUE_TOGETHER = {
-    # # For example, model name, fields in tuples just as they defined in "unique_together"
+    # # For example, model name, fields in tuples just as they defined in "unique_together":
     # 'Company': (('company_name', ), ),
 }
 
@@ -155,7 +178,7 @@ DICT_MODEL_UNIQUE_TOGETHER = {
 # 若有 model 字段实际存储的是 json 串, 在此需要列出这些字段名, 以在 get 请求返回时候, 解析正确
 MODEL_JSON_FIELD_NAMES = (
     # # For example:
-    # 'employee_info',
+    'employee_info',
 )
 
 # Whether the APIs of the site should be used by login

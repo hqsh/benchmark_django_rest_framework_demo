@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+BENCHMARK_SETTINGS = 'benchmark_django_rest_framework_demo.benchmark_settings'    # add this line
 
 # Application definition
 
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'benchmark_app',
+    BENCHMARK_SETTINGS,    # add this line
 ]
 
 MIDDLEWARE = [
@@ -137,4 +139,3 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
-BENCHMARK_SETTINGS = 'benchmark_django_rest_framework_demo.benchmark_settings'
