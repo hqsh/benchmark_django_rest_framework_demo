@@ -1,4 +1,4 @@
-Benchmark Django Rest Framework —— Django Rest API的高效开发框架
+<center># Benchmark Django Rest Framework —— Django Rest API的高效开发框架</center>
 
 # **1.引言**
 
