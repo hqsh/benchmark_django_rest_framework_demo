@@ -21,7 +21,7 @@ SUCCESS_COUNT = 'success_count'    # insert success count field name when data o
 #        every model instances of the filter result for the models in dict format, same as when DATA_STYLE is 1.
 #        Additionally, the DATA include COUNT, NEXT, PREVIOUS fields. See the comments of these 3 fields for more detail
 #        information.
-DATA_TYPE = 2
+DATA_STYLE = 2
 RESULT = 'result'
 COUNT = 'count'    # the count of items in result list
 # If OFFSET and PAGE are in request parameters, the value of NEXT is the next page url.
@@ -243,3 +243,9 @@ MODEL_JSON_FIELD_NAMES = (
 
 # The configuration of whether omit un-editable fields from models in the http get response. The default value is False.
 OMIT_UN_EDITABLE_FIELDS = False
+
+# The configuration of whether to transform keys of the params or data of the request or response
+# between the style of python and java.
+# For example, transform employeeName to employee_name after BenchmarkApiView receive request.
+# Conversely, transform employee_name to employeeName before BenchmarkApiView return response.
+TRANSFER_KEYS = True
