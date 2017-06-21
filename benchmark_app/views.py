@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
 
-from benchmark_django_rest_framework.benchmark_api_view import BenchmarkAPIView
+from benchmark_django_rest_framework.benchmark_api_view import BenchmarkAPIView, SETTINGS
 from benchmark_app.models import *
 from benchmark_app.demo_init_data import *
+import json
 
 
 class CompanyView(BenchmarkAPIView):
@@ -59,9 +60,12 @@ class InitDataView(BenchmarkAPIView):
                         else:
                             data[field.field.attname] = data[field_name]
                             del data[field_name]
+                for key, value in data.items():
+                    if key in SETTINGS.MODEL_JSON_FIELD_NAMES:
+                        data[key] = json.dumps(value)
                 m = model(**data)
                 m.save()
                 for field_name, related_ms in many_to_many_relations.items():
                     for related_m in related_ms:
                         getattr(m, field_name).add(related_m)
-        return self.get_response_by_code(0)
+        return self.get_response_by_code()

@@ -11,8 +11,8 @@ init_departments = [
 ]
 
 init_employees = [
-    {"employee_id": 1, "employee_name": "EmployeeAX1", "department": 1, "employee_info": "{\"sex\": \"male\", \"age\": 40}"},
-    {"employee_id": 2, "employee_name": "EmployeeAX2", "department": 1, "employee_info": "{\"sex\": \"female\", \"new_employee\": true}"},
+    {"employee_id": 1, "employee_name": "EmployeeAX1", "department": 1, "employee_info": {"sex": "male", "age": 40}},
+    {"employee_id": 2, "employee_name": "EmployeeAX2", "department": 1, "employee_info": {"sex": "female", "new_employee": True}},
     {"employee_id": 3, "employee_name": "EmployeeAY1", "department": 2},
     {"employee_id": 4, "employee_name": "EmployeeAY2", "department": 2},
     {"employee_id": 5, "employee_name": "EmployeeBX1", "department": 3},
