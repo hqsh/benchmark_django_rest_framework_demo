@@ -13,15 +13,15 @@ DATA = 'data'      # the data field name
 SUCCESS_COUNT = 'success_count'    # insert success count field name when data of http post request is a list
 
 # DATA_STYLE is the style of DATA field for http get response.
-# If DATA_STYLE is 1: DATA a list including every model instances of the filter result for the models in dict format.
-# If DATA_STYLE is 2:
+# If DATA_STYLE is "list": DATA is a list including every model instances of the filter result for the models in dict format.
+# If DATA_STYLE is "dict":
 #     1. When the primary key of the primary_model is in the request uri parameter, DATA is a dict for the only one
 #        filter result for the models. If the data with this primary key doesn't exist, DATA is null.
 #     2. In the other situation, DATA a dict which has a RESULT field. The value of the RESULT field is a list including
-#        every model instances of the filter result for the models in dict format, same as when DATA_STYLE is 1.
+#        every model instances of the filter result for the models in dict format, same as when DATA_STYLE is "list".
 #        Additionally, the DATA include COUNT, NEXT, PREVIOUS fields. See the comments of these 3 fields for more detail
 #        information.
-DATA_STYLE = 2
+DATA_STYLE = 'dict'
 RESULT = 'result'
 COUNT = 'count'    # the count of items in result list
 # If OFFSET and PAGE are in request parameters, the value of NEXT is the next page url.
@@ -61,7 +61,7 @@ DICT_RESPONSE_BY_CODE = {
     '20': {MSG: 'request parameters are not valid'},
     '21': {MSG: 'anonymous user cannot access this api, should login first'},
     '22': {MSG: 'user haven\'t the right to access this api'},
-    '23': {MSG: 'user are not the creator of the pk: '},
+    '23': {MSG: 'user is not the creator of the data with primary key: '},
     '24': {MSG: 'the name of request parameter is not correct: '},
     '100': {MSG: 'login failed'},
 }
@@ -69,6 +69,8 @@ DICT_RESPONSE_BY_CODE = {
 for _code, _res in DICT_RESPONSE_BY_CODE.items():
     if int(_code) < 200:
         _res[CODE] = int(_code) + CODE_OFFSET
+    else:
+        _res[CODE] = int(_code)
 
 
 def GET_RESPONSE_BY_CODE(code=SUCCESS_CODE, msg=None, data=None, msg_append=None):
@@ -162,6 +164,9 @@ Q_OR = '|'
 # And you cannot use "," because it is the splitter of elements in the list in http get request by this framework.
 Q_AND = '$'
 
+# The keyword the parameter name of upload file in http request body.
+FILE = 'file'
+
 # The class variable name of sub-class of BenchmarkApiView for using django multiple databases.
 # The choice of value of this variable can be the DATABASES.keys() defined in django "settings.py" file.
 USING = 'using'
@@ -183,8 +188,17 @@ USING = 'using'
 # each undefined access of method
 ACCESS = 'access'
 
+# Custom function for user right authentication.
+# The function should be static method, class method of a class in the file, or just a function not in any class.
+# The inputs of the function are user and role. And the outputs of it are True or False.
+USER_RIGHT_AUTHENTICATE_FUNCTION = None
+
 # The keyword of django model primary key.
 MODEL_PRIMARY_KEY = 'pk'
+
+# The configuration of whether use MODEL_PRIMARY_KEY when http post method (True),
+# or use the primary key name of models.
+USE_MODEL_PRIMARY_KEY = False
 
 # When some models use delete flag, the http delete requests don't delete the items of models, but they set the
 # delete flag to "True" value. And we should set the delete flag name of the fields as the value of MODEL_DELETE_FLAG.
@@ -248,4 +262,10 @@ OMIT_UN_EDITABLE_FIELDS = False
 # between the style of python and java.
 # For example, transform employeeName to employee_name after BenchmarkApiView receive request.
 # Conversely, transform employee_name to employeeName before BenchmarkApiView return response.
-TRANSFER_KEYS = True
+TRANSFER_KEYS = False
+
+# keywords of http get request in benchmark_settings
+KEYWORDS = {SELECT_RELATED, VALUES, OFFSET, LIMIT, PAGE, COUNT, ORDER_BY, Q, Q_OR, Q_AND}
+
+# keywords of http get request in benchmark_settings which with value need to be transferred
+KEYWORDS_WITH_VALUE_NEED_TRANSFER = {SELECT_RELATED, VALUES, ORDER_BY}

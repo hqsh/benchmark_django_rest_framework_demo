@@ -16,9 +16,11 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from benchmark_app.views import *
+# from rest_framework.authtoken import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    # url(r'^login/?', views.obtain_auth_token),
     url(r'^init_data/?$', InitDataView.as_view()),
     url(r'^company/(?P<pk>\d+)/?$', CompanyView.as_view()),
     url(r'^company/?$', CompanyView.as_view()),
