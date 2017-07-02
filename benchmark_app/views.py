@@ -4,7 +4,7 @@ from benchmark_django_rest_framework.benchmark_api_view import BenchmarkAPIView,
 from benchmark_app.models import *
 from benchmark_app.demo_init_data import *
 from django.contrib.auth.models import User
-from rest_framework.authtoken.views import ObtainAuthToken
+# from rest_framework.authtoken.views import ObtainAuthToken
 import json
 
 
@@ -33,22 +33,22 @@ class PCView(BenchmarkAPIView):
 #     primary_model = ProjectTeamToEmployee
 
 
-class LoginView(BenchmarkAPIView):
-    access = {'get': None, 'post': 'all', 'put': None, 'delete': None}
-
-    def post_model(self, data=None):
-        auth = ObtainAuthToken()
-        try:
-            res = auth.post(self.request)
-            token = res.data['token']
-            return self.get_response_by_code(data={'token': token})
-        except Exception as e:
-            return self.get_response_by_code(1, msg=str(e))
+# class LoginView(BenchmarkAPIView):
+#     access = {'get': None, 'post': 'all', 'put': None, 'delete': None}
+#
+#     def post_model(self, data=None):
+#         auth = ObtainAuthToken()
+#         try:
+#             res = auth.post(self.request)
+#             token = res.data['token']
+#             return self.get_response_by_code(data={'token': token})
+#         except Exception as e:
+#             return self.get_response_by_code(1, msg=str(e))
 
 
 class InitDataView(BenchmarkAPIView):
     primary_model = None
-    access = {'get': None, 'post': 'superuser', 'put': None, 'delete': None}
+    access = {'get': None, 'post': 'all', 'put': None, 'delete': None}
     need_login = False    # Whether this api needs login first. If we haven't defined this variable, the default value is False.
 
     def post_model(self, data=None):

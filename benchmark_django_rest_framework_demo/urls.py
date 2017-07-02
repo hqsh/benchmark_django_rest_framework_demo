@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from benchmark_app.views import *
+from rest_framework_swagger.views import get_swagger_view
 # from rest_framework.authtoken import views
 
 urlpatterns = [
@@ -34,4 +35,5 @@ urlpatterns = [
     url(r'^pc/?$', PCView.as_view()),
     # url(r'^project_team_to_employee/(?P<pk>\d+)/?$', ProjectTeamToEmployeeView.as_view()),
     # url(r'^project_team_to_employee/?$', ProjectTeamToEmployeeView.as_view()),
+    url(r'^swagger/?$', get_swagger_view(title='benchmark demo')),
 ]

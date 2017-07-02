@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'benchmark_app',
+    'rest_framework_swagger',
     # 'rest_framework.authtoken',    # run "python manage.py migrate authtoken" to create table: authtoken_token
     BENCHMARK_SETTINGS,    # add this line
 ]

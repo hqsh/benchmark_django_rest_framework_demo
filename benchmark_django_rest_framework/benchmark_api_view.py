@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 
 from django.http import JsonResponse, StreamingHttpResponse
-from rest_framework.views import APIView
-from rest_framework.serializers import ModelSerializer
+from rest_framework.generics import GenericAPIView
+from rest_framework.serializers import ModelSerializer, Serializer
 import copy
 import django
 import json
@@ -38,7 +38,7 @@ class Logger:
         self.logger.removeHandler(self.stream_handler)
 
 
-class BenchmarkAPIView(APIView):
+class BenchmarkAPIView(GenericAPIView):
 
     @classmethod
     def init(cls):
@@ -66,13 +66,14 @@ class BenchmarkAPIView(APIView):
                 cls.view_not_support_methods = ()
         cls.using = getattr(cls, SETTINGS.USING, 'default')
         cls.logger = Logger()
-
-        class BenchmarkSerializer(ModelSerializer):
-            class Meta:
-                model = cls.primary_model
-                fields = '__all__'
-        cls.BenchmarkSerializer = BenchmarkSerializer
-
+        if cls.primary_model is None:
+            cls.serializer_class = Serializer
+        else:
+            class BenchmarkSerializer(ModelSerializer):
+                class Meta:
+                    model = cls.primary_model
+                    fields = '__all__'
+            cls.serializer_class = BenchmarkSerializer
         cls.access = getattr(cls, SETTINGS.ACCESS, {'get': 'all', 'post': 'all', 'put': 'all', 'delete': 'all'})
         for method in {'get', 'post', 'put', 'delete'} - set(cls.access.keys()):
             cls.access[method] = 'all'
@@ -198,7 +199,7 @@ class BenchmarkAPIView(APIView):
         else:
             raise Exception('data should be dict, list or tuple')
         for data in list_data:
-            serializer = self.BenchmarkSerializer(data=data)
+            serializer = self.serializer_class(data=data)
             if self.method == 'put':
                 for field_value in serializer.fields.values():
                     field_value.required = False
@@ -272,18 +273,18 @@ class BenchmarkAPIView(APIView):
 
     def check_access(self, pk=None):
         role = self.access[self.method]
-        if not isinstance(role, (str, tuple, list)):
-            raise Exception('The values of access items should be str, list or tuple')
-        if role == 'all':    # every one can access
-            return self.get_response_by_code()
         if role is None:    # no one can access
             return self.get_response_by_code(3 + SETTINGS.CODE_OFFSET)
-        if not self.user.is_authenticated():
-            return self.get_response_by_code(21 + SETTINGS.CODE_OFFSET)
+        if not isinstance(role, (str, tuple, list)):
+            raise Exception('The values of access items should be None, str, list or tuple')
         if isinstance(role, str):
             roles = [role]
         else:
             roles = role
+        if 'all' in roles:    # every one can access
+            return self.get_response_by_code()
+        if not self.user.is_authenticated():
+            return self.get_response_by_code(21 + SETTINGS.CODE_OFFSET)
         if 'user' in roles:    # login user can access
             return self.get_response_by_code()
         if 'staff' in roles:    # staff or admin can access
