@@ -49,7 +49,6 @@ class PCView(BenchmarkAPIView):
 class InitDataView(BenchmarkAPIView):
     primary_model = None
     access = {'get': None, 'post': 'all', 'put': None, 'delete': None}
-    need_login = False    # Whether this api needs login first. If we haven't defined this variable, the default value is False.
 
     def post_model(self, data=None):
         User.objects.all().delete()
@@ -57,6 +56,9 @@ class InitDataView(BenchmarkAPIView):
         User.objects.create_user(username='staff', password='staff', is_staff=True)
         User.objects.create_user(username='user', password='user')
         Company.objects.all().delete()
+        Department.objects.all().delete()
+        Employee.objects.all().delete()
+        PC.objects.all().delete()
         ProjectTeam.objects.all().delete()
         tuple_model = (Company, Department, Employee, ProjectTeam, PC)
         tuple_init_data = (init_companies, init_departments, init_employees, init_project_teams, init_pcs)
