@@ -650,14 +650,12 @@ class BenchmarkModel(object):
                 except django.db.utils.IntegrityError as e:
                     if hasattr(e, 'args'):
                         if e.args[0] == 1048 or e.args[0].startswith('NOT NULL constraint failed: '):    # field cannot be None (很可能还有其他类型的错误, 待增加)
-
                             res = cls.get_response_by_code(1 + SETTINGS.CODE_OFFSET, str(e))
                             if not insert_multiple_data:
                                 return res
                             failed_items.append(data)
                             if res[SETTINGS.MSG] not in msgs:
                                 msgs.append(res[SETTINGS.MSG])
-
                     data_ = {}
                     for key, value in data.items():
                         if isinstance(value, list):

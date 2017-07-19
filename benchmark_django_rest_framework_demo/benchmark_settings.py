@@ -276,7 +276,7 @@ OMIT_UN_EDITABLE_FIELDS = False
 # between the style of python and java.
 # For example, convert employeeName to employee_name after BenchmarkApiView receive request.
 # Conversely, convert employee_name to employeeName before BenchmarkApiView return response.
-CONVERT_KEYS = True
+CONVERT_KEYS = False
 
 # If DEBUG is True in settings.py, whether authentications for every APIs are needed.
 NEED_AUTHENTICATION_IN_DEBUG_MODE = True
