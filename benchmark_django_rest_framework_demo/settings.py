@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-BENCHMARK_SETTINGS = 'benchmark_django_rest_framework_demo.benchmark_settings'    # add this line
+BENCHMARK_SETTINGS = 'benchmark_django_rest_framework.benchmark_settings'    # add this line
 
 # Application definition
 
