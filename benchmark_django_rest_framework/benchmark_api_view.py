@@ -319,14 +319,25 @@ class BenchmarkAPIView(PARENT_VIEW):
             values_white_list=self.values_white_list, Qs=self.Qs, using=self.using
         )
 
-    def get_redis_value(self, key, data_type='json', convert_to_str=True):
+    def get_redis_value(self, key, data_type='json', return_with_success_status=False):
+        '''
+        :param key: the key of redis data
+        :param data_type: the values' type of redis data, choices are 'json', 'str', 'int', 'float', 'bool' or 'bytes'
+        :param return_with_success_status: whether return the result of read redis success or not, True of False
+        :return: the variable of redis data or the benchmark error json. if return_with_success_status is True, the
+                 extra second returned variable show the whether the first returned variable is redis data.
+        '''
         try:
             value = self.redis.get(key)
         except redis.exceptions.ConnectionError:
+            if return_with_success_status:
+                return self.get_response_by_code(28), False
             return self.get_response_by_code(28)
         if value is None:
+            if return_with_success_status:
+                return self.get_response_by_code(29), False
             return self.get_response_by_code(29)
-        if convert_to_str or data_type in ('json', 'str', 'int', 'float', 'bool'):
+        if data_type in ('json', 'str', 'int', 'float', 'bool'):
             try:
                 value = bytes.decode(value)
                 if data_type == 'json':
@@ -340,10 +351,14 @@ class BenchmarkAPIView(PARENT_VIEW):
                         value = True
                     elif value.lower() == 'false':
                         value = False
-                else:
-                    raise ValueError('the value of "data_type" is unknown')
             except:
-                self.get_response_by_code(30)
+                if return_with_success_status:
+                    return self.get_response_by_code(30), False
+                return self.get_response_by_code(30)
+        elif data_type != 'bytes':
+            raise ValueError('the value of "data_type" is unknown, choices are "json", "str", "int", "float", "bool"" or "bytes"')
+        if return_with_success_status:
+            return value, True
         return value
 
     def serializer_check(self, data):
@@ -798,6 +813,12 @@ class BenchmarkAPIView(PARENT_VIEW):
                     path = None
                     has_result_field = None
                 self.process_keys(res, path, has_result_field)
+
+            # additional data
+            additional_data = getattr(self, 'additional_data', None)
+            if isinstance(additional_data, dict):
+                for key, value in additional_data.items():
+                    res[SETTINGS.DATA][self.python_to_java(key, self.omit_underlines)] = value
 
             # process json response class
             json_response_class = getattr(SETTINGS, 'JSON_RESPONSE_CLASS', None)
