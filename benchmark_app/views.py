@@ -18,6 +18,13 @@ class DepartmentView(BenchmarkAPIView):
 
 class EmployeeView(BenchmarkAPIView):
     primary_model = Employee
+    enable_select_related_in_params = True
+    enabled_select_related_in_params = '__all__'
+    rename_fields = {
+        '/': {'projectteam_set': 'project_teams'},
+        '/projectteam_set/': {'project_team_id': 'team_id'},
+        '/employee_info/': {'sex': 'employee_sex', 'age': 'employee_age'},
+    }
 
 
 class ProjectTeamView(BenchmarkAPIView):

@@ -79,6 +79,7 @@ DICT_RESPONSE_BY_CODE = {
     '29': {MSG: 'redis has no data'},
     '30': {MSG: 'redis data is not correct'},
     '31': {MSG: 'redis data is not correct after processed, should be dict'},
+    '32': {MSG: 'set redis data failed, the reason is: '},
     '100': {MSG: 'login failed'},
 }
 
@@ -151,6 +152,9 @@ SELECT_RELATED = 'select_related'
 
 # Whether enable SELECT_RELATED in http get params. For security consideration, it is recommended to set to False.
 ENABLE_SELECT_RELATED_IN_PARAMS = False
+
+# Whether enable SELECT_RELATED only enable for get one http get request.
+ONLY_ENABLE_SELECT_RELATED_FOR_GET_ONE = False
 
 # The keyword for filter the http get response data fields. If one request has several model field names to filter,
 # list them in a list. If the request need a black list for filter (default is white list), add "-" in the front of
@@ -309,7 +313,7 @@ OMIT_UN_EDITABLE_FIELDS = False
 # between the style of python and java.
 # For example, convert employeeName to employee_name after BenchmarkApiView receive request.
 # Conversely, convert employee_name to employeeName before BenchmarkApiView return response.
-CONVERT_KEYS = False
+CONVERT_KEYS = True
 
 # When CONVERT_KEYS is True, the configuration of whether to omit continuous underlines as one underline in the process
 # for convert keys from python style to java style.
