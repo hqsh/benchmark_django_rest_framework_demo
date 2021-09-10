@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
+import mongoengine
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -91,6 +92,17 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+MONGODB = {
+    'default': {
+        'name': 'demo',
+        'host': '127.0.0.1',
+        'port': 27017,
+        'tz_aware': True,
+    },
+}
+
+mongoengine.connect(MONGODB['default']['name'], host=MONGODB['default']['host'], port=MONGODB['default']['port'])
 
 LOGGING = {
     'version': 1,

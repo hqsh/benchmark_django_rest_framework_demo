@@ -31,3 +31,7 @@ init_pcs = [
     {"pc_id": 2, "pc_name": "PC2", "employee": 2},
 ]
 
+articles = [
+    {"title": "how to use benchmark", "authors": ["hqsh"], "context": "todo"},
+    {"title": "how to use benchmark", "authors": ["johnson"], "context": "todo"}
+]

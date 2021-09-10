@@ -14,6 +14,8 @@ class CompanyView(BenchmarkAPIView):
 
 class DepartmentView(BenchmarkAPIView):
     primary_model = Department
+    enable_select_related_in_params = True
+    enabled_select_related_in_params = '__all__'
 
 
 class EmployeeView(BenchmarkAPIView):

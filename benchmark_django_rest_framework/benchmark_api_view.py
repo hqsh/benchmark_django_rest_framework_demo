@@ -78,6 +78,7 @@ class BenchmarkAPIView(PARENT_VIEW):
         ):
             if not hasattr(cls, setting):
                 setattr(cls, setting, getattr(SETTINGS, setting.upper(), default_value))
+        cls.queryset = None if cls.primary_model is None else cls.primary_model.objects.all()
         # Each value of settings as follow is got from class variable (in lowercase) in each view firstly. If it is not
         # defined in class variable, then set it as default value.
         for setting, default_value in (
@@ -227,9 +228,9 @@ class BenchmarkAPIView(PARENT_VIEW):
                             BenchmarkFilter.base_filters[cls.python_to_java(field, getattr(SETTINGS, 'OMIT_UNDERLINES', True))] \
                                 = BenchmarkFilter.base_filters.pop(field)
                     cls.filter_class = BenchmarkFilter
-            return super().as_view(actions=actions)
+            return super(BenchmarkAPIView, cls).as_view(actions=actions)
         else:
-            return super().as_view(initkwargs=initkwargs)
+            return super(BenchmarkAPIView, cls).as_view(initkwargs=initkwargs)
 
     @staticmethod
     def get_response_by_code(code=SETTINGS.SUCCESS_CODE, msg=None, data=None, msg_append=None):
@@ -310,11 +311,14 @@ class BenchmarkAPIView(PARENT_VIEW):
     @classmethod
     def check_primary_model(cls, function_name):
         if cls.primary_model is None:
-            raise Exception('primary_model is None, you cannot use this default framework function: %s' % function_name)
+            raise ValueError('primary_model is None, you cannot use this default framework function: %s' % function_name)
 
     # get 请求对应的 model 操作，对请求 uri 对应的所有 model（支持所有字段）进行过滤操作后对 query set 按 get_data_method 函数进行取值
     def get_model(self):
-        self.check_primary_model('get_model')
+        try:
+            self.check_primary_model('get_model')
+        except ValueError:
+            return
         params = self.params
         params.update(self.uri_params)
         if self.only_enable_select_related_for_get_one and len(self.uri_params) == 0:
@@ -445,7 +449,10 @@ class BenchmarkAPIView(PARENT_VIEW):
 
     # post 请求对应的 model 操作
     def post_model(self, data=None, return_with_inserted_data=False):
-        self.check_primary_model('post_model')
+        try:
+            self.check_primary_model('post_model')
+        except ValueError:
+            return
         post_data = copy.deepcopy(self.data)
         if data:
             if isinstance(post_data, dict):
@@ -481,13 +488,19 @@ class BenchmarkAPIView(PARENT_VIEW):
 
     # put 请求对应的 model 操作，仅可对 primary_model 进行操作
     def put_model(self, data=None):
-        self.check_primary_model('put_model')
+        try:
+            self.check_primary_model('put_model')
+        except ValueError:
+            return
         post_data = self.get_uri_params_data(data)
         return self.primary_model.put_model(post_data, user=self.user.get_username(), using=self.using)
 
     # delete 请求对应的 model 操作
     def delete_model(self):
-        self.check_primary_model('delete_model')
+        try:
+            self.check_primary_model('delete_model')
+        except ValueError:
+            return
         data = copy.deepcopy(self.data)
         data.update(self.uri_params)
         return self.primary_model.delete_model(data, user=self.user.get_username(), using=self.using)
@@ -508,27 +521,30 @@ class BenchmarkAPIView(PARENT_VIEW):
             return self.get_response_by_code()
         if not self.user.is_authenticated():
             return self.get_response_by_code(21 + SETTINGS.CODE_OFFSET)
-        if 'user' in roles:    # login user can access
-            return self.get_response_by_code()
-        if 'staff' in roles:    # staff can access
-            return self.get_response_by_code() if self.user.is_staff else self.get_response_by_code(22 + SETTINGS.CODE_OFFSET)
-        if 'superuser' in roles:    # superuser can access
-            return self.get_response_by_code() if self.user.is_superuser else self.get_response_by_code(22 + SETTINGS.CODE_OFFSET)
-        if 'creator' in roles:    # creator or admin can access put or delete method
+        res = None
+        if 'user' in roles and (res is None or res[SETTINGS.CODE] != SETTINGS.SUCCESS_CODE):    # login user can access
+            res = self.get_response_by_code()
+        if 'staff' in roles and (res is None or res[SETTINGS.CODE] != SETTINGS.SUCCESS_CODE):    # staff can access
+            res = self.get_response_by_code() if self.user.is_staff else self.get_response_by_code(22 + SETTINGS.CODE_OFFSET)
+        if 'superuser' in roles and (res is None or res[SETTINGS.CODE] != SETTINGS.SUCCESS_CODE):    # superuser can access
+            res = self.get_response_by_code() if self.user.is_superuser else self.get_response_by_code(22 + SETTINGS.CODE_OFFSET)
+        if 'right_authenticate' in roles and (res is None or res[SETTINGS.CODE] != SETTINGS.SUCCESS_CODE):
+            res = self.get_response_by_code() if self.right_authenticate() else self.get_response_by_code(22 + SETTINGS.CODE_OFFSET)
+        if 'creator' in roles and (res is None or res[SETTINGS.CODE] != SETTINGS.SUCCESS_CODE):    # creator or admin can access put or delete method
             if SETTINGS.MODEL_CREATOR not in self.primary_model._meta.get_fields():
                 raise Exception('primary model %s has no field %s' % (self.primary_model.__name__, SETTINGS.MODEL_CREATOR))
             if pk is None:
-                return self.get_response_by_code(2 + SETTINGS.CODE_OFFSET)
+                res = self.get_response_by_code(2 + SETTINGS.CODE_OFFSET)
             if not isinstance(pk, (list, tuple)):
                 pk = [pk]
             if SETTINGS.MODEL_DELETE_FLAG is None:
                 query_set = self.primary_model.objects.filter(pk__in=pk).using(self.using)
                 if query_set.count == 0:
-                    return self.get_response_by_code(6 + SETTINGS.CODE_OFFSET)
+                    res = self.get_response_by_code(6 + SETTINGS.CODE_OFFSET)
             else:
                 query_set = self.primary_model.objects.filter(**{'pk__in': pk, SETTINGS.MODEL_DELETE_FLAG: 0}).using(self.using)
                 if query_set.count == 0:
-                    return self.get_response_by_code(7 + SETTINGS.CODE_OFFSET)
+                    res = self.get_response_by_code(7 + SETTINGS.CODE_OFFSET)
             not_creator_pks = []
             for item in query_set:
                 creator = getattr(item, SETTINGS.MODEL_CREATOR, None)
@@ -537,14 +553,14 @@ class BenchmarkAPIView(PARENT_VIEW):
                 if creator != self.user.username:
                     not_creator_pks.append(item.pk)
             if len(not_creator_pks) > 0:
-                return self.get_response_by_code(23 + SETTINGS.CODE_OFFSET, msg_append=', '.join(not_creator_pks))
-        if 'right_authenticate' in roles:
-            return self.get_response_by_code() if self.right_authenticate() else self.get_response_by_code(22 + SETTINGS.CODE_OFFSET)
+                res = self.get_response_by_code(23 + SETTINGS.CODE_OFFSET, msg_append=', '.join(not_creator_pks))
+        if res is not None and res[SETTINGS.CODE] == SETTINGS.SUCCESS_CODE:
+            return res
         auth_func = getattr(SETTINGS, 'USER_RIGHT_AUTHENTICATE_FUNCTION', None)
         if not hasattr(auth_func, '__call__'):
             raise Exception('Unknown access type %s, choices are None, "all", "user", "staff", "superuser", "creator", '
-                            'or the values of USER_RIGHT_AUTHENTICATE_FUNCTION_PATH, USER_RIGHT_AUTHENTICATE_FUNCTION '
-                            'is wrong.' % role)
+                            '"right_authenticate" or the values of USER_RIGHT_AUTHENTICATE_FUNCTION_PATH, '
+                            'USER_RIGHT_AUTHENTICATE_FUNCTION is wrong.' % role)
         res = auth_func(self, roles)
         if res is True:
             return self.get_response_by_code()
@@ -981,6 +997,12 @@ class BenchmarkAPIView(PARENT_VIEW):
                     res = self.get_response_by_code(31)
             else:
                 res = self.get_model()
+        if res is None:    # when haven't any difinitions (get_model() or primary_model) for benchmark view, use the process in drf view.
+            if SETTINGS.PARENT_VIEW == 'ApiView':
+                return super(BenchmarkAPIView, self).get(request)
+            if self.pk is None:
+                return super(BenchmarkAPIView, self).list(request)
+            return super(BenchmarkAPIView, self).retrieve(request, pk=self.pk)
         if isinstance(res, dict) and SETTINGS.CODE in res.keys() and res[SETTINGS.CODE] == SETTINGS.SUCCESS_CODE:
             self.paginate(res)
         return self.process_response(res)
@@ -990,6 +1012,10 @@ class BenchmarkAPIView(PARENT_VIEW):
         res = self.begin(request, uri_params)
         if res[SETTINGS.CODE] == SETTINGS.SUCCESS_CODE:
             res = self.post_model()
+        if res is None:    # when haven't any difinitions (post_model() or primary_model) for benchmark view, use the process in drf view.
+            if SETTINGS.PARENT_VIEW == 'ApiView':
+                return super(BenchmarkAPIView, self).post(request)
+            return super(BenchmarkAPIView, self).create(request)
         return self.process_response(res)
 
     # 处理 put 请求
@@ -997,6 +1023,10 @@ class BenchmarkAPIView(PARENT_VIEW):
         res = self.begin(request, uri_params)
         if res[SETTINGS.CODE] == SETTINGS.SUCCESS_CODE:
             res = self.put_model()
+        if res is None:    # when haven't any difinitions (put_model() or primary_model) for benchmark view, use the process in drf view.
+            if SETTINGS.PARENT_VIEW == 'ApiView':
+                return super(BenchmarkAPIView, self).put(request)
+            return super(BenchmarkAPIView, self).update(request)
         return self.process_response(res)
 
     # 处理 delete 请求
@@ -1004,4 +1034,8 @@ class BenchmarkAPIView(PARENT_VIEW):
         res = self.begin(request, uri_params)
         if res[SETTINGS.CODE] == SETTINGS.SUCCESS_CODE:
             res = self.delete_model()
+        if res is None:    # when haven't any difinitions (delete_model() or primary_model) for benchmark view, use the process in drf view.
+            if SETTINGS.PARENT_VIEW == 'ApiView':
+                return super(BenchmarkAPIView, self).delete(request)
+            return super(BenchmarkAPIView, self).destroy(request)
         return self.process_response(res)

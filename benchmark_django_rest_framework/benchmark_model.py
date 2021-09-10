@@ -3,7 +3,8 @@
 from collections import OrderedDict
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from django.db.models.sql.constants import QUERY_TERMS
+# from django.db.models.sql.constants import QUERY_TERMS
+from django.db.models.sql.query import LOOKUP_SEP, Query
 from itertools import chain
 import copy
 import datetime
@@ -279,7 +280,7 @@ class BenchmarkModel(object):
         if '__' not in key:
             return False
         split_keys = key.split('__')
-        if len(split_keys) == 2 and split_keys[0] in field_names and split_keys[1] in QUERY_TERMS:
+        if len(split_keys) == 2 and split_keys[0] in field_names and split_keys[1] in Query:
             return True
         if split_keys[0] in field_names:
             field = getattr(model, split_keys[0], None)

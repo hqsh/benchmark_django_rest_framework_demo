@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
 
+from benchmark_django_rest_framework.benchmark_settings import *
 import json
 import requests
 import unittest
-from benchmark_django_rest_framework_demo.benchmark_settings import *
+import copy
 
 
 SERVER_URL = 'http://127.0.0.1:8000/'
@@ -41,7 +42,7 @@ class BenchmarkTestCase(unittest.TestCase):
                 delete_pk_in_res = None
             if delete_pk_in_res is not None:
                 pks = []
-                for data in self.__class__.res[DATA]:
+                for data in self.__class__.res[DATA]['result']:
                     pks.append(data[delete_pk_in_res])
                 if len(pks) == 0:
                     return

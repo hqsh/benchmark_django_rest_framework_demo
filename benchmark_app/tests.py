@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from benchmark_django_rest_framework.benchmark_test import *
+from benchmark_app.benchmark_test import *
 from benchmark_app.demo_init_data import *
 
 

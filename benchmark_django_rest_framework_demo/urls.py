@@ -13,15 +13,20 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 from benchmark_app.views import *
-from rest_framework_swagger.views import get_swagger_view
-# from rest_framework.authtoken import views
+# from rest_framework_swagger.views import get_swagger_view
+from rest_framework.authtoken import views
+from django.utils.module_loading import autodiscover_modules
+from benchmark_app.routers import router
+
+autodiscover_modules('routers')
 
 urlpatterns = [
+    url('', include(router.urls)),    # department url use router
     url(r'^admin/', admin.site.urls),
-    # url(r'^login/?', views.obtain_auth_token),
+    url(r'^login/?', views.obtain_auth_token),
     url(r'^init_data/?$', InitDataView.as_view()),
     url(r'^company/(?P<pk>\d+)/?$', CompanyView.as_view(has_pk=True)),
     url(r'^company/?$', CompanyView.as_view()),
@@ -35,5 +40,5 @@ urlpatterns = [
     url(r'^pc/?$', PCView.as_view()),
     # url(r'^project_team_to_employee/(?P<pk>\d+)/?$', ProjectTeamToEmployeeView.as_view()),
     # url(r'^project_team_to_employee/?$', ProjectTeamToEmployeeView.as_view()),
-    url(r'^$', get_swagger_view(title='benchmark demo')),
+    # url(r'^$', get_swagger_view(title='benchmark demo')),
 ]

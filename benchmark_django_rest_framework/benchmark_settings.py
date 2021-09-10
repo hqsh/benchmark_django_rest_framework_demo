@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 from django.http import JsonResponse
 from rest_framework.response import Response
-from rest_framework import status
 import copy
 
 
@@ -80,6 +79,7 @@ DICT_RESPONSE_BY_CODE = {
     '30': {MSG: 'redis data is not correct'},
     '31': {MSG: 'redis data is not correct after processed, should be dict'},
     '32': {MSG: 'set redis data failed, the reason is: '},
+    '33': {MSG: 'primary key is not valid'},
     '100': {MSG: 'login failed'},
 }
 
@@ -313,7 +313,7 @@ OMIT_UN_EDITABLE_FIELDS = False
 # between the style of python and java.
 # For example, convert employeeName to employee_name after BenchmarkApiView receive request.
 # Conversely, convert employee_name to employeeName before BenchmarkApiView return response.
-CONVERT_KEYS = True
+CONVERT_KEYS = False
 
 # When CONVERT_KEYS is True, the configuration of whether to omit continuous underlines as one underline in the process
 # for convert keys from python style to java style.
