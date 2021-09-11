@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'benchmark_app',
     'rest_framework_swagger',
-    # 'rest_framework.authtoken',    # run "python manage.py migrate authtoken" to create table: authtoken_token
+    'rest_framework.authtoken',    # run "python manage.py migrate authtoken" to create table: authtoken_token
     BENCHMARK_SETTINGS,    # add this line
 ]
 
@@ -159,4 +159,3 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-

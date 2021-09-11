@@ -1,0 +1,4 @@
+django==1.10.0
+djangorestframework==3.6.0
+django-filter==1.0.4
+redis

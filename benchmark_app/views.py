@@ -9,16 +9,19 @@ import json
 
 
 class CompanyView(BenchmarkAPIView):
+    access = {'get': 'staff', 'post': 'staff', 'put': 'staff', 'delete': 'staff'}
     primary_model = Company
 
 
 class DepartmentView(BenchmarkAPIView):
+    access = {'get': 'staff', 'post': 'staff', 'put': 'staff', 'delete': 'staff'}
     primary_model = Department
     enable_select_related_in_params = True
     enabled_select_related_in_params = '__all__'
 
 
 class EmployeeView(BenchmarkAPIView):
+    access = {'get': 'staff', 'post': 'staff', 'put': 'staff', 'delete': 'staff'}
     primary_model = Employee
     enable_select_related_in_params = True
     enabled_select_related_in_params = '__all__'
@@ -30,10 +33,12 @@ class EmployeeView(BenchmarkAPIView):
 
 
 class ProjectTeamView(BenchmarkAPIView):
+    access = {'get': 'staff', 'post': 'staff', 'put': 'staff', 'delete': 'staff'}
     primary_model = ProjectTeam
 
 
 class PCView(BenchmarkAPIView):
+    access = {'get': 'staff', 'post': 'staff', 'put': 'staff', 'delete': 'staff'}
     primary_model = PC
 
 
